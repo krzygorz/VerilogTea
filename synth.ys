@@ -1,0 +1,5 @@
+read -sv ./tea.v
+hierarchy -top tea_encrypt
+proc 
+opt
+write_verilog synth.v
