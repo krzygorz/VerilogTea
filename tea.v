@@ -28,7 +28,7 @@ module tea_interface(input [63:0] in, input mode, input writekey, input clk, out
     reg[127:0] key;
     reg waiting_key;
 
-    localparam rounds = 4;
+    localparam rounds = 32;
     localparam swapbytes = 0;
 
     localparam DELTA = 32'h9E3779B9;

@@ -1,4 +1,4 @@
-# TEA-Verilog
+# VerilogTea
 This is a Verilog implementation of the Tiny Encryption Algorithm.
 
 - `ref.c` contains a reference implementation adapted from the TEA paper, and
