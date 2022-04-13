@@ -1,5 +1,8 @@
 read -sv ./tea.v
-hierarchy -top tea_encrypt
-proc 
-opt
-write_verilog synth.v
+hierarchy -top tea_interface
+
+#proc 
+#opt
+synth_ice40
+write_verilog tea_synth.v
+write_blif tea_synth.blif

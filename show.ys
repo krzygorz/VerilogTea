@@ -1,5 +1,5 @@
 read -sv ./tea.v
-hierarchy -top tea_encrypt
+hierarchy -top tea_interface
 proc
 opt
-show
+show -format pdf

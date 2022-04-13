@@ -28,7 +28,8 @@ module tea_interface(input [63:0] in, input mode, input writekey, input clk, out
     reg[127:0] key;
     reg waiting_key;
 
-    localparam rounds = 32;
+    localparam rounds = 4;
+    localparam swapbytes = 0;
 
     localparam DELTA = 32'h9E3779B9;
 
@@ -97,13 +98,18 @@ module tea_interface(input [63:0] in, input mode, input writekey, input clk, out
 
     function [63:0] compute_out(input mode, input[63:0] in, input[127:0] key, input integer rounds);
         begin
-            in = le32_blocks64(in);
-            key = le32_blocks128(key);
+            if(swapbytes) begin
+                in = le32_blocks64(in);
+                key = le32_blocks128(key);
+            end
+
             if (mode == 0)
                 compute_out = encrypt_nrounds(in, key, rounds);
             else
                 compute_out = decrypt_nrounds(in, key, rounds);
-            compute_out = le32_blocks64(compute_out);
+
+            if(swapbytes)
+                compute_out = le32_blocks64(compute_out);
         end
     endfunction
 
