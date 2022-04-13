@@ -45,7 +45,6 @@ module tea_interface(input [63:0] in, input mode, input writekey, input clk, out
         begin
             sum = 0;
             encrypt_nrounds = v;
-	    $display("input: %x", v);
             for(integer i=0; i<n; i = i+1) begin
                 sum = sum + DELTA;
                 encrypt_nrounds[63:32] += tea_round_func(encrypt_nrounds[31:0] , k[127:64], sum);
@@ -78,8 +77,36 @@ module tea_interface(input [63:0] in, input mode, input writekey, input clk, out
         end else if (mode == 0) begin
             waiting_key = 0;
         end
-    end 
+    end
 
-    assign out = mode ? decrypt_nrounds(in, key, rounds) : encrypt_nrounds(in, key, rounds);
+    function [31:0] byteswap32(input[31:0] x);
+        byteswap32 = {x[7:0], x[15:8], x[23:16], x[31:24]};
+    endfunction
+    function [63:0] le32_blocks64(input[63:0] x);
+        le32_blocks64 = {
+            byteswap32(x[63:32]),
+            byteswap32(x[31:0])
+        };
+    endfunction
+    function [127:0] le32_blocks128(input[127:0] x);
+        le32_blocks128 = {
+            le32_blocks64(x[127:64]),
+            le32_blocks64(x[63:0])
+        };
+    endfunction
+
+    function [63:0] compute_out(input mode, input[63:0] in, input[127:0] key, input integer rounds);
+        begin
+            in = le32_blocks64(in);
+            key = le32_blocks128(key);
+            if (mode == 0)
+                compute_out = encrypt_nrounds(in, key, rounds);
+            else
+                compute_out = decrypt_nrounds(in, key, rounds);
+            compute_out = le32_blocks64(compute_out);
+        end
+    endfunction
+
+    assign out = compute_out(mode,in,key,rounds);
 endmodule
 
