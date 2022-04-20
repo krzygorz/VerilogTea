@@ -18,10 +18,22 @@ in Linux (search for `tea_tv_template`):
 
 https://raw.githubusercontent.com/torvalds/linux/93e220a62da36f766b3188e76e234607e41488f9/crypto/testmgr.h
 
-TODO:
+# Synthesis with Yosys
 
-- reduce the circuit size by saving intermediate rounds in a reusable register.
-- experiment with pipelining?
-- timing analysis
+The module can be synthetized with Yosys for the ICE40 family. Simply run
+
+```
+yosys synth.ys
+```
+
+This produces a verilog file `tea_synth.sh` which implements this module using
+the primitives available in ICE40. This also generates a .bliff file which can be used with a place-and-route tool like nextpnr.
+
+You can even run the testbench with the synthesized version by running
+`test_synth.sh`.
+
+# Cool diagram
+
+You can re-generate by running `yosys show.ys`.
 
 ![auto-generated circuit diagram](diagram.svg)

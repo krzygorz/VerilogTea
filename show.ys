@@ -1,6 +1,5 @@
 read -sv ./tea.v
 hierarchy -top tea_interface
-proc
-opt
-select */i:* %x*
+proc; opt; fsm; opt
+select */i:* %x* #select only stuff connected (also indirectly) to inputs
 show -format svg -prefix diagram -stretch
