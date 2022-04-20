@@ -23,3 +23,5 @@ TODO:
 - reduce the circuit size by saving intermediate rounds in a reusable register.
 - experiment with pipelining?
 - timing analysis
+
+![auto-generated circuit diagram](diagram.svg)
