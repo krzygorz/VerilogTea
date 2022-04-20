@@ -20,7 +20,7 @@ https://raw.githubusercontent.com/torvalds/linux/93e220a62da36f766b3188e76e23460
 
 # Synthesis with Yosys
 
-The module can be synthetized with Yosys for the ICE40 family. Simply run
+The module can be synthetized with Yosys for the ICE40 family. Run the command
 
 ```
 yosys synth.ys
@@ -30,10 +30,13 @@ This produces a verilog file `tea_synth.sh` which implements this module using
 the primitives available in ICE40. This also generates a .bliff file which can be used with a place-and-route tool like nextpnr.
 
 You can even run the testbench with the synthesized version by running
-`test_synth.sh`.
+
+```
+test_synth.sh
+```
 
 # Cool diagram
 
-You can re-generate by running `yosys show.ys`.
+You can re-generate it by running `yosys show.ys`.
 
 ![auto-generated circuit diagram](diagram.svg)
