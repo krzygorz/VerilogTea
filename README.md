@@ -20,7 +20,7 @@ https://raw.githubusercontent.com/torvalds/linux/93e220a62da36f766b3188e76e23460
 
 # Synthesis with Yosys
 
-The module can be synthetized with Yosys for the ICE40 family. Run the command
+The module can be synthetized with [Yosys](https://github.com/YosysHQ/yosys) for the ICE40 family by running:
 
 ```
 yosys synth.ys
@@ -29,7 +29,7 @@ yosys synth.ys
 This produces a verilog file `tea_synth.sh` which implements this module using
 the primitives available in ICE40. This also generates a .bliff file which can be used with a place-and-route tool like nextpnr.
 
-You can even run the testbench with the synthesized version by running
+You can even run the testbench with the synthesized version by running:
 
 ```
 test_synth.sh
