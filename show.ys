@@ -1,6 +1,12 @@
 read -sv ./tea.v
 hierarchy -top tea_interface
+chparam -set swapbytes 0
+
 proc
 opt
-select */i:* %x* #select only stuff connected (also indirectly) to inputs
+#opt -full
+
+clean -purge
+#select */i:* %x* #select only stuff connected (also indirectly) to inputs
+
 show -format svg -prefix diagram -stretch

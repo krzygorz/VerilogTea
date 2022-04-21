@@ -42,6 +42,7 @@ procedural blocks by multiplexers and applying some basic optimizations.
 However, unlike in the case of full synthesis, the translation of high-level
 blocks like adders to logic gate level is not performed. This makes the picture
 readable while still giving an overview of how the code will be synthesized.
+Also, the `swapbytes` parameter is set to 0 to simplify the diagram.
 
 To re-generate it, run `yosys show.ys`.
 

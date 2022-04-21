@@ -51,7 +51,7 @@ module tea_interface (
     reg[5:0] round_counter;
 
     assign unswapped_in = swapbytes ? byteswap32_64(in) : in;
-    assign out = swapbytes ? byteswap32_64(round_data) : in;
+    assign out = swapbytes ? byteswap32_64(round_data) : round_data;
     assign out_ready = round_counter[5];
 
     localparam DELTA = 32'h9E3779B9;
