@@ -35,8 +35,14 @@ You can even run the testbench with the synthesized version by running
 test_synth.sh
 ```
 
-# Cool diagram
+## Cool diagram
 
-You can re-generate it by running `yosys show.ys`.
+The diagram below shows the result of "high level" synthesis - replacing
+procedural blocks by multiplexers and applying some basic optimizations.
+However, unlike in the case of full synthesis, the translation of high-level
+blocks like adders to logic gate level is not performed. This makes the picture
+readable while still giving an overview of how the code will be synthesized.
+
+To re-generate it, run `yosys show.ys`.
 
 ![auto-generated circuit diagram](diagram.svg)
