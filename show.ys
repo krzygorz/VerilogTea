@@ -1,10 +1,15 @@
 read -sv ./tea.v
-hierarchy -top tea_interface
-chparam -set swapbytes 0
+hierarchy -top tea_enc_dec
+#hierarchy -top tea_interface
+#flatten
+#chparam -set swapbytes 0
+
 
 proc
 opt
 #opt -full
+#
+opt_expr -full
 
 clean -purge
 #select */i:* %x* #select only stuff connected (also indirectly) to inputs
