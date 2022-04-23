@@ -28,30 +28,21 @@
 * discussion on endianness issues.
 */
 
-module tea_interface (
+module tea_enc_dec (
     input [63:0] in,
+    input [127:0] key,
     input mode,
     input reset,
     input write,
     input clk,
-    output [63:0] out,
+    output reg [63:0] out,
     output reg out_ready
 );
     parameter rounds = 32;
     parameter swapbytes = 1;
 
-    reg [63:0] round_data;
-    wire [63:0] unswapped_in;
-
-    reg[127:0] key;
-    reg waiting_key;
-
     reg[31:0] sum;
     reg[5:0] round_counter;
-
-    assign unswapped_in = swapbytes ? byteswap32_64(in) : in;
-    assign out = swapbytes ? byteswap32_64(round_data) : round_data;
-    //assign out_ready = round_counter[5];
 
     localparam DELTA = 32'h9E3779B9;
 
@@ -79,6 +70,52 @@ module tea_interface (
         end
     endfunction
 
+    always@(posedge clk) begin
+        $display("%d %x %x %b",round_counter, sum, out, mode);
+        if (reset) begin
+            round_counter <= 0;
+            out_ready <= 0;
+        end else if (write) begin
+            round_counter <= 0;
+            out <= in;
+            sum <= mode ? (rounds)*DELTA : DELTA;
+            out_ready <= 0;
+        end else if (round_counter < rounds) begin
+            round_counter <= round_counter + 1;
+            if(mode == 0) begin
+                out <= encrypt_cycle(out, key, sum);
+                sum <= sum + DELTA;
+            end else begin
+                out <= decrypt_cycle(out, key, sum);
+                sum <= sum - DELTA;
+            end
+        end else
+            out_ready <= 1;
+    end
+endmodule
+
+module tea_interface(
+    input [63:0] in,
+    input mode,
+    input reset,
+    input write,
+    input clk,
+    output [63:0] out,
+    output out_ready
+);
+    parameter swapbytes = 1;
+
+    wire [63:0] encdec_out;
+    wire [63:0] unswapped_in;
+
+    reg[127:0] key;
+    reg waiting_key;
+
+    assign unswapped_in = swapbytes ? byteswap32_64(in) : in;
+    assign out = swapbytes ? byteswap32_64(encdec_out) : encdec_out;
+
+    tea_enc_dec encdec(unswapped_in, key, mode, reset, write, clk, encdec_out, out_ready);
+
     function [31:0] byteswap32(input[31:0] x);
         byteswap32 = {x[7:0], x[15:8], x[23:16], x[31:24]};
     endfunction
@@ -90,32 +127,12 @@ module tea_interface (
     endfunction
 
     always@(posedge clk) begin
-        $display("%d %x %x %b",round_counter, sum, round_data, mode);
         if (reset) begin
-            round_counter <= 0;
-
             key[127:64] <= unswapped_in;
             waiting_key <= 1;
-            out_ready <= 0;
         end else if (waiting_key) begin
             key[63:0] <= unswapped_in;
             waiting_key <= 0;
-        end else if (write) begin
-            round_counter <= 0;
-            round_data <= unswapped_in;
-            sum <= mode ? (rounds)*DELTA : DELTA;
-            out_ready <= 0;
-        end else if (round_counter < rounds) begin
-            round_counter <= round_counter + 1;
-            if(mode == 0) begin
-                round_data <= encrypt_cycle(round_data, key, sum);
-                sum <= sum + DELTA;
-            end else begin
-                round_data <= decrypt_cycle(round_data, key, sum);
-                sum <= sum - DELTA;
-            end
-        end else
-            out_ready <= 1;
+        end
     end
 endmodule
-
