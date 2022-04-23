@@ -41,11 +41,14 @@ module tea_enc_dec (
     output reg [63:0] out,
     output reg out_ready
 );
-    parameter rounds = 32;
+    parameter local_rounds = 32;
+    parameter total_rounds = 32;
     parameter swapbytes = 1;
+    parameter sum_offset = 0;
 
     reg[31:0] sum;
     reg[5:0] round_counter;
+    reg running;
 
     localparam DELTA = 32'h9E3779B9;
 
@@ -74,16 +77,22 @@ module tea_enc_dec (
     endfunction
 
     always@(posedge clk) begin
-        $display("%d %x %x %b",round_counter, sum, out, mode);
+        $strobe("%d %d %x %x %b %b %b %b %d", sum_offset, round_counter, sum, out, mode, write, out_ready, running, $time);
         if (reset) begin
             round_counter <= 0;
+            running <= 0;
             out_ready <= 0;
-        end else if (write) begin
-            round_counter <= 0;
-            out <= in;
-            sum <= mode ? (rounds)*DELTA : DELTA;
+        end else if (!running) begin
+            if (write) begin
+                round_counter <= 0;
+                out <= in;
+                running <= 1;
+                sum <= mode ? (total_rounds - sum_offset)*DELTA : DELTA*(sum_offset+1);
+            end
             out_ready <= 0;
-        end else if (round_counter < rounds) begin
+        end else begin
+            if (write)
+                $display("BRUH");
             round_counter <= round_counter + 1;
             if(mode == 0) begin
                 out <= encrypt_cycle(out, key, sum);
@@ -92,8 +101,12 @@ module tea_enc_dec (
                 out <= decrypt_cycle(out, key, sum);
                 sum <= sum - DELTA;
             end
-        end else
-            out_ready <= 1;
+
+            if(round_counter == local_rounds-1) begin
+                running <= 0;
+                out_ready <= 1;
+            end
+        end
     end
 endmodule
 
@@ -107,6 +120,8 @@ module tea_interface(
     output out_ready
 );
     parameter swapbytes = 1;
+    parameter stages = 2;
+    parameter rounds = 32;
 
     wire [63:0] encdec_out;
     wire [63:0] unswapped_in;
@@ -117,7 +132,23 @@ module tea_interface(
     assign unswapped_in = swapbytes ? byteswap32_64(in) : in;
     assign out = swapbytes ? byteswap32_64(encdec_out) : encdec_out;
 
-    tea_enc_dec encdec(unswapped_in, key, mode, reset, write, clk, encdec_out, out_ready);
+    wire [63:0] outputs [stages:0];
+    wire readys [stages:0];
+
+    assign outputs[0] = unswapped_in;
+    assign encdec_out = outputs[stages];
+    assign readys[0] = write;
+    assign out_ready = readys[stages];
+
+    genvar i;
+    generate
+        for(i=0; i<stages; i = i+1) begin
+            tea_enc_dec encdec_stage(outputs[i], key, mode, reset, readys[i], clk, outputs[i+1], readys[i+1]);
+            defparam encdec_stage.local_rounds = rounds/stages;
+            defparam encdec_stage.total_rounds = rounds;
+            defparam encdec_stage.sum_offset = i*rounds/stages;
+        end
+    endgenerate
 
     function [31:0] byteswap32(input[31:0] x);
         byteswap32 = {x[7:0], x[15:8], x[23:16], x[31:24]};
