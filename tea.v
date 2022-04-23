@@ -6,7 +6,6 @@
 * To save I/O pins, the 128-bit key is written using the 64-bit wide input and
 * stored in a register.
 *
-*
 * Initialization:
 * - Set `reset` to 1 and `in` to the first half of the key. It will be read
 *   on positive clock edge.
@@ -36,7 +35,7 @@ module tea_interface (
     input write,
     input clk,
     output [63:0] out,
-    output out_ready
+    output reg out_ready
 );
     parameter rounds = 32;
     parameter swapbytes = 1;
@@ -52,7 +51,7 @@ module tea_interface (
 
     assign unswapped_in = swapbytes ? byteswap32_64(in) : in;
     assign out = swapbytes ? byteswap32_64(round_data) : round_data;
-    assign out_ready = round_counter[5];
+    //assign out_ready = round_counter[5];
 
     localparam DELTA = 32'h9E3779B9;
 
@@ -97,6 +96,7 @@ module tea_interface (
 
             key[127:64] <= unswapped_in;
             waiting_key <= 1;
+            out_ready <= 0;
         end else if (waiting_key) begin
             key[63:0] <= unswapped_in;
             waiting_key <= 0;
@@ -104,7 +104,8 @@ module tea_interface (
             round_counter <= 0;
             round_data <= unswapped_in;
             sum <= mode ? (rounds)*DELTA : DELTA;
-        end else if (round_counter < 32) begin
+            out_ready <= 0;
+        end else if (round_counter < rounds) begin
             round_counter <= round_counter + 1;
             if(mode == 0) begin
                 round_data <= encrypt_cycle(round_data, key, sum);
@@ -113,7 +114,8 @@ module tea_interface (
                 round_data <= decrypt_cycle(round_data, key, sum);
                 sum <= sum - DELTA;
             end
-        end
+        end else
+            out_ready <= 1;
     end
 endmodule
 

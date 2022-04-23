@@ -5,3 +5,5 @@ tea_synth.blif
 ref
 tea
 test/
+
+.envrc

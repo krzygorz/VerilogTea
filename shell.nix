@@ -4,5 +4,9 @@
   nextpnr_gui = nextpnr.override { enableGui = true; qtbase = qt5.qtbase; wrapQtAppsHook = qt5.wrapQtAppsHook; };
   in
   mkShell {
-    nativeBuildInputs = [verilog yosys xdot graphviz nextpnr_gui ];
+    nativeBuildInputs = [
+        verilog yosys nextpnr_gui 
+        xdot graphviz 
+        delta
+    ];
 }
