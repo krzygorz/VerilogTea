@@ -3,8 +3,11 @@
 * This is a single module that implements both encryption and decryption.
 * Tested with using Icarus Verilog.
 *
-* To save I/O pins, the 128-bit key is written using the 64-bit wide input and
-* stored in a register.
+* This file defines two modules:
+* - `tea_enc_dec` - Implementation of the encoding and decoding.
+* - `tea_interface` - Exposes a more user-friendly interface. To save I/O pins,
+*   the 128-bit key is written using the 64-bit wide input and stored in a
+*   register. The rest of the comments apply to this module.
 *
 * Initialization:
 * - Set `reset` to 1 and `in` to the first half of the key. It will be read
@@ -23,9 +26,9 @@
 * The total time from inputting the data to output is therefore 33 cycles, where the
 * first cycle is for writing the data.
 *
-* By default, the module interprets 64-bit data as two 32-bit little-endian integers.
-* To use big-endian instead, set the parameter `swapbytes` to 0. See ref.c for more
-* discussion on endianness issues.
+* By default, the interface module interprets 64-bit data as two 32-bit
+* little-endian integers. To use big-endian instead, set the parameter
+* `swapbytes` to 0. See ref.c for more discussion on endianness issues.
 */
 
 module tea_enc_dec (
