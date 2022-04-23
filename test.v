@@ -29,8 +29,8 @@ module tea_test;
         write = 0;
         for(integer i=1; i<= 31; i++) begin
             #2;
-            if (out_ready)
-                $display("out_ready too soon: %d/32", i);
+            //if (out_ready)
+            //    $display("out_ready too soon: %d/32", i);
         end
         #2;
         #2;
@@ -57,6 +57,8 @@ module tea_test;
 
     initial begin
         clk = 0;
+	$dumpfile("test.vcd");
+	$dumpvars(0, tea_test);
 
         test_enc_dec(64'h74657374206d652e, 64'h775d2a6af6ce9209, 128'h2b02056806144976775d0e266c287843);
 

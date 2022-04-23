@@ -38,6 +38,7 @@ module tea_interface (
     output reg out_ready
 );
     parameter rounds = 32;
+    parameter rounds_per_clock = 4;
     parameter swapbytes = 1;
 
     reg [63:0] round_data;
@@ -63,19 +64,25 @@ module tea_interface (
         end
     endfunction
 
-    function [63:0] encrypt_cycle(input[63:0] v, input[127:0] k, input[63:0] sum);
+    function [63:0] encrypt_cycle(input[63:0] v, input[127:0] k, input[63:0] sum, input integer nrounds);
         begin
             encrypt_cycle = v;
-            encrypt_cycle[63:32] += tea_round_func(encrypt_cycle[31:0] , k[127:64], sum);
-            encrypt_cycle[31:0]  += tea_round_func(encrypt_cycle[63:32], k[63:0],   sum);
+            for(integer i=0; i<nrounds; i++) begin
+                encrypt_cycle[63:32] += tea_round_func(encrypt_cycle[31:0] , k[127:64], sum);
+                encrypt_cycle[31:0]  += tea_round_func(encrypt_cycle[63:32], k[63:0],   sum);
+                sum += DELTA;
+            end
         end
     endfunction
 
-    function [63:0] decrypt_cycle(input[63:0] v, input[127:0] k, input [63:0] sum);
+    function [63:0] decrypt_cycle(input[63:0] v, input[127:0] k, input [63:0] sum, input integer nrounds);
         begin
             decrypt_cycle = v;
-            decrypt_cycle[31:0]  -= tea_round_func(decrypt_cycle[63:32], k[63:0],   sum);
-            decrypt_cycle[63:32] -= tea_round_func(decrypt_cycle[31:0],  k[127:64], sum);
+            for(integer i=0; i<nrounds; i++) begin
+                decrypt_cycle[31:0]  -= tea_round_func(decrypt_cycle[63:32], k[63:0],   sum);
+                decrypt_cycle[63:32] -= tea_round_func(decrypt_cycle[31:0],  k[127:64], sum);
+                sum -= DELTA;
+            end
         end
     endfunction
 
@@ -105,14 +112,14 @@ module tea_interface (
             round_data <= unswapped_in;
             sum <= mode ? (rounds)*DELTA : DELTA;
             out_ready <= 0;
-        end else if (round_counter < rounds) begin
+        end else if (round_counter < rounds/rounds_per_clock) begin
             round_counter <= round_counter + 1;
             if(mode == 0) begin
-                round_data <= encrypt_cycle(round_data, key, sum);
-                sum <= sum + DELTA;
+                round_data <= encrypt_cycle(round_data, key, sum, rounds_per_clock);
+                sum <= sum + DELTA*rounds_per_clock;
             end else begin
-                round_data <= decrypt_cycle(round_data, key, sum);
-                sum <= sum - DELTA;
+                round_data <= decrypt_cycle(round_data, key, sum, rounds_per_clock);
+                sum <= sum - DELTA*rounds_per_clock;
             end
         end else
             out_ready <= 1;
