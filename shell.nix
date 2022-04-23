@@ -5,7 +5,7 @@
   in
   mkShell {
     nativeBuildInputs = [
-        verilog yosys nextpnr_gui 
+        verilog yosys nextpnr_gui gtkwave
         xdot graphviz 
         delta
     ];

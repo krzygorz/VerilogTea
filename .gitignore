@@ -1,9 +1,15 @@
 diagram.dot
-a.out
+
 tea_synth.v
 tea_synth.blif
+tea_synth.json
+tea.asc
+
 ref
 tea
+
+test.vcd
+
 test/
 
 .envrc

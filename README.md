@@ -26,8 +26,8 @@ The module can be synthetized with [Yosys](https://github.com/YosysHQ/yosys) for
 yosys synth.ys
 ```
 
-This produces a verilog file `tea_synth.sh` which implements this module using
-the primitives available in ICE40. This also generates a .bliff file which can be used with a place-and-route tool like nextpnr.
+This produces a verilog file `tea_synth.v` which implements this module using
+the primitives available in ICE40. This also saves the .json file in a which can be used with a place-and-route tool like nextpnr.
 
 You can even run the testbench with the synthesized version by running:
 

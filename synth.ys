@@ -5,4 +5,4 @@ hierarchy -top tea_interface
 #opt
 synth_ice40
 write_verilog tea_synth.v
-write_blif tea_synth.blif
+write_json tea_synth.json
