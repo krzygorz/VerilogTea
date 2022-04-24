@@ -29,13 +29,13 @@ yosys synth.ys
 This produces a verilog file `tea_synth.v` which implements this module using
 the primitives available in ICE40. This also saves the .json file in a which can be used with a place-and-route tool like nextpnr.
 
-You can even run the testbench with the synthesized version by running:
+The testbench can be used with the synthesized version by running:
 
 ```
 test_synth.sh
 ```
 
-## Cool diagram
+## Circuit diagram
 
 The diagram below shows the result of "high level" synthesis - replacing
 procedural blocks by multiplexers and applying some basic optimizations.
