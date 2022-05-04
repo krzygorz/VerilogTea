@@ -56,6 +56,9 @@ module tea_test;
     endtask
 
     initial begin
+        $dumpfile("test.vcd");
+        $dumpvars(0, tea_test);
+
         clk = 0;
 
         test_enc_dec(64'h74657374206d652e, 64'h775d2a6af6ce9209, 128'h2b02056806144976775d0e266c287843);

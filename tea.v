@@ -42,7 +42,6 @@ module tea_enc_dec (
     output reg out_ready
 );
     parameter rounds = 32;
-    parameter swapbytes = 1;
 
     reg[31:0] sum;
     reg[5:0] round_counter;
