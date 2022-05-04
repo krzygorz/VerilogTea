@@ -35,7 +35,6 @@ module tea_enc_dec (
     input [63:0] in,
     input [127:0] key,
     input mode,
-    input reset,
     input write,
     input clk,
     output reg [63:0] out,
@@ -74,10 +73,7 @@ module tea_enc_dec (
 
     always@(posedge clk) begin
         $display("%d %x %x %b",round_counter, sum, out, mode);
-        if (reset) begin
-            round_counter <= 0;
-            out_ready <= 0;
-        end else if (write) begin
+        if (write) begin
             round_counter <= 0;
             out <= in;
             sum <= mode ? (rounds)*DELTA : DELTA;
@@ -116,7 +112,7 @@ module tea_interface(
     assign unswapped_in = swapbytes ? byteswap32_64(in) : in;
     assign out = swapbytes ? byteswap32_64(encdec_out) : encdec_out;
 
-    tea_enc_dec encdec(unswapped_in, key, mode, reset, write, clk, encdec_out, out_ready);
+    tea_enc_dec encdec(unswapped_in, key, mode, write, clk, encdec_out, out_ready);
 
     function [31:0] byteswap32(input[31:0] x);
         byteswap32 = {x[7:0], x[15:8], x[23:16], x[31:24]};
