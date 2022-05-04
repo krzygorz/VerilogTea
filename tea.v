@@ -19,8 +19,8 @@
 * - Set `mode`
 *   - 0 for encryption
 *   - 1 for decryption
-* - Set `writedata` to 1 and set `in` to the data to be encrypted/decrypted
-* - After a positive clock edge set `writedata` to 0 and wait for 32 clock cycles.
+* - Set `write` to 1 and set `in` to the data to be encrypted/decrypted
+* - After a positive clock edge set `write` to 0 and wait for 32 clock cycles.
 * - Read the output from out.
 *
 * The total time from inputting the data to output is therefore 33 cycles, where the
