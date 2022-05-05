@@ -72,7 +72,7 @@ module tea_enc_dec (
     endfunction
 
     always@(posedge clk) begin
-        $display("%d %x %x %b",round_counter, sum, out, mode);
+        //$display("%d %x %x %b",round_counter, sum, out, mode);
         if (write) begin
             round_counter <= 0;
             out <= in;
