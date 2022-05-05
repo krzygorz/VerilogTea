@@ -109,6 +109,8 @@ module tea_interface(
     reg[127:0] key;
     reg waiting_key;
 
+    /* For consistency, `in` should not be used directly, but through
+     * `unswapped_in` which is affected by the `swapbytes` parameter */
     assign unswapped_in = swapbytes ? byteswap32_64(in) : in;
     assign out = swapbytes ? byteswap32_64(encdec_out) : encdec_out;
 
