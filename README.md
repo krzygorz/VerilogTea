@@ -37,13 +37,8 @@ test_synth.sh
 
 ## Circuit diagram
 
-The diagram below shows the result of "high level" synthesis - replacing
-procedural blocks by multiplexers and applying some basic optimizations.
-However, unlike in the case of full synthesis, the translation of high-level
-blocks like adders to logic gate level is not performed. This makes the picture
-readable while still giving an overview of how the code will be synthesized.
-Also, the `swapbytes` parameter is set to 0 to simplify the diagram.
-
-To re-generate the diagram, run `yosys show.ys`.
+This diagrams shows how yosys synthetizes the `tea_enc_dec` module before
+primitives like adders and muxes are mapped into logic-gate level. To
+re-generate this diagram, run `yosys show.ys`.
 
 ![auto-generated circuit diagram](diagram.svg)
