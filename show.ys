@@ -1,9 +1,29 @@
 read -sv ./tea.v
 hierarchy -top tea_enc_dec
 #chparam -set swapbytes 0
-
 proc
+
+#### copied from synth_ice40
+flatten
+tribuf -logic
+deminout
+
+opt_expr
+opt_clean
+check
+opt -nodffe -nosdff
+fsm
 opt
+wreduce
+peepopt
+opt_clean
+share
+
+opt
+memory -nomap
+#####
+
+#opt
 #opt -full
 #opt_expr -full
 
