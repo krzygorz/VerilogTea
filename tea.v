@@ -27,8 +27,8 @@
 * first cycle is for writing the data.
 *
 * By default, the interface module interprets 64-bit data as two 32-bit
-* little-endian integers. To use big-endian instead, set the parameter
-* `swapbytes` to 0. See ref.c for more discussion on endianness issues.
+* little-endian integers. This makes using the Linux test vectors more
+* convenient. To use big-endian instead, set the parameter `swapbytes` to 0.
 */
 
 module tea_enc_dec (
@@ -40,6 +40,9 @@ module tea_enc_dec (
     output reg [63:0] out,
     output reg out_ready
 );
+    //The `out` register is also used for intermediate data.
+    
+    //The number of rounds can be changed to obtain a variant of the usual TEA.
     parameter rounds = 32;
 
     reg[31:0] sum;
@@ -47,6 +50,11 @@ module tea_enc_dec (
 
     localparam DELTA = 32'h9E3779B9;
 
+    /*
+    * Computes a single round(half-cycle) of TEA. The output of this should be
+    * added to the appropriate half of register v. Used both for encryption
+    * and decryption.
+    */
     function [31:0] tea_round_func (input[31:0] vhalf, input[63:0] khalf, input[31:0] sum);
         begin
             tea_round_func = ((vhalf << 4) + khalf[63:32]) ^
@@ -55,6 +63,10 @@ module tea_enc_dec (
         end
     endfunction
 
+    /*
+    * Computes a single cycle of TEA. The output should replace the old value
+    * of v.
+    */
     function [63:0] encrypt_cycle(input[63:0] v, input[127:0] k, input[63:0] sum);
         begin
             encrypt_cycle = v;
@@ -63,6 +75,10 @@ module tea_enc_dec (
         end
     endfunction
 
+    /*
+    * Computes a single cycle of TEA, in reverse direction (decryption). The
+    * output should replace the old value of v.
+    */
     function [63:0] decrypt_cycle(input[63:0] v, input[127:0] k, input [63:0] sum);
         begin
             decrypt_cycle = v;
@@ -76,6 +92,8 @@ module tea_enc_dec (
         if (write) begin
             round_counter <= 0;
             out <= in;
+            //sum starts from `DELTA` rather than 0 because unlike in the
+            //reference C code, we increase `sum` after computing each round.
             sum <= mode ? (rounds)*DELTA : DELTA;
             out_ready <= 0;
         end else if (round_counter < rounds) begin
@@ -87,7 +105,7 @@ module tea_enc_dec (
                 out <= decrypt_cycle(out, key, sum);
                 sum <= sum - DELTA;
             end
-        end else
+        end else //counted 32 rounds, mark output as ready.
             out_ready <= 1;
     end
 endmodule
@@ -104,21 +122,33 @@ module tea_interface(
     parameter swapbytes = 1;
 
     wire [63:0] encdec_out;
+    wire [63:0] swapped_out;
     wire [63:0] unswapped_in;
 
     reg[127:0] key;
+    
+    // set to 1 if the first half of the key is already read, and the module is
+    // waiting for the second half
     reg waiting_key;
+    reg enable_output;
 
-    /* For consistency, `in` should not be used directly, but through
-     * `unswapped_in` which is affected by the `swapbytes` parameter */
+    // For consistency, `in` should not be used directly in this module, but
+    // through `unswapped_in` which is affected by the `swapbytes` parameter
     assign unswapped_in = swapbytes ? byteswap32_64(in) : in;
-    assign out = swapbytes ? byteswap32_64(encdec_out) : encdec_out;
+
+
+    // Output from enc_dec is swapped if `swapbytes` is set.
+    // Output is set to a predictable value (0) after reset.
+    assign swapped_out = swapbytes ? byteswap32_64(encdec_out) : encdec_out;
+    assign out = enable_output ? swapped_out : 0;
 
     tea_enc_dec encdec(unswapped_in, key, mode, write, clk, encdec_out, out_ready);
 
+    //convert one 32-bit integer from big endian to little endian
     function [31:0] byteswap32(input[31:0] x);
         byteswap32 = {x[7:0], x[15:8], x[23:16], x[31:24]};
     endfunction
+    //convert two consecutive 32-bit integers from big endian to little endian
     function [63:0] byteswap32_64(input[63:0] x);
         byteswap32_64 = {
             byteswap32(x[63:32]),
@@ -130,9 +160,12 @@ module tea_interface(
         if (reset) begin
             key[127:64] <= unswapped_in;
             waiting_key <= 1;
+            enable_output <= 0;
         end else if (waiting_key) begin
             key[63:0] <= unswapped_in;
             waiting_key <= 0;
+        end else if (write) begin
+            enable_output <= 1;
         end
     end
 endmodule

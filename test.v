@@ -8,6 +8,7 @@ module tea_test;
 
     always #1 clk = !clk;
 
+    //sends the key to the DUT
     task set_key(input[127:0] key);
     begin
         reset = 1;
@@ -19,9 +20,9 @@ module tea_test;
     end
     endtask
 
+    //sends data to the DUT and waits until output is ready
     task run_with_data(input[63:0] testdata, input _mode);
     begin
-        //send input data
         mode = _mode;
         write = 1;
         in = testdata;
@@ -39,6 +40,11 @@ module tea_test;
     end
     endtask
 
+    /* 
+    * Runs a test by first encrypting the data, comparing it against the
+    * expected ciphertext, and then decrypting it and comparing the output
+    * with the original plaintext.
+    * */
     task test_enc_dec(input[63:0] testdata, input[63:0] expected, input[127:0] key);
         begin
         set_key(key);
