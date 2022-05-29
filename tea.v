@@ -122,7 +122,6 @@ module tea_interface(
     parameter swapbytes = 1;
 
     wire [63:0] encdec_out;
-    wire [63:0] swapped_out;
     wire [63:0] unswapped_in;
 
     reg[127:0] key;
@@ -130,19 +129,20 @@ module tea_interface(
     // set to 1 if the first half of the key is already read, and the module is
     // waiting for the second half
     reg waiting_key;
-    reg enable_output;
 
     // For consistency, `in` should not be used directly in this module, but
     // through `unswapped_in` which is affected by the `swapbytes` parameter
     assign unswapped_in = swapbytes ? byteswap32_64(in) : in;
 
-
     // Output from enc_dec is swapped if `swapbytes` is set.
-    // Output is set to a predictable value (0) after reset.
-    assign swapped_out = swapbytes ? byteswap32_64(encdec_out) : encdec_out;
-    assign out = enable_output ? swapped_out : 0;
+    assign out = swapbytes ? byteswap32_64(encdec_out) : encdec_out;
 
-    tea_enc_dec encdec(unswapped_in, key, mode, write, clk, encdec_out, out_ready);
+    // out_ready should be 0 after reset
+    reg enable_output;
+    wire out_ready_unmasked;
+    assign out_ready = enable_output && out_ready_unmasked;
+
+    tea_enc_dec encdec(unswapped_in, key, mode, write, clk, encdec_out, out_ready_unmasked);
 
     //convert one 32-bit integer from big endian to little endian
     function [31:0] byteswap32(input[31:0] x);
